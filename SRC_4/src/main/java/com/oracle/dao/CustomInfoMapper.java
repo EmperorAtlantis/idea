@@ -3,10 +3,14 @@ package com.oracle.dao;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.oracle.entitys.CustomInfo;
+import org.springframework.stereotype.Repository;
 
+@Repository
+@Mapper
 public interface CustomInfoMapper {
     int deleteByPrimaryKey(Integer id);
 

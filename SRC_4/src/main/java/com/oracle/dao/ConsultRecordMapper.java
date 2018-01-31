@@ -3,6 +3,7 @@ package com.oracle.dao;
 import java.sql.Date;
 import java.util.List;
 
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.oracle.entitys.ConsultRecord;
@@ -10,6 +11,7 @@ import com.oracle.entitys.CustomInfo;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@Mapper
 public interface ConsultRecordMapper {
     int deleteByPrimaryKey(Integer id);
 

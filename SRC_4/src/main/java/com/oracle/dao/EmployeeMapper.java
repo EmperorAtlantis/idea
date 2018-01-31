@@ -2,12 +2,14 @@ package com.oracle.dao;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.oracle.entitys.Employee;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@Mapper
 public interface EmployeeMapper {
     int deleteByPrimaryKey(Integer id);
 

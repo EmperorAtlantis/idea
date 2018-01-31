@@ -3,7 +3,11 @@ package com.oracle.dao;
 import java.util.List;
 
 import com.oracle.entitys.Department;
+import org.apache.ibatis.annotations.Mapper;
+import org.springframework.stereotype.Repository;
 
+@Repository
+@Mapper
 public interface DepartmentMapper {
     int deleteByPrimaryKey(Integer id);
 
