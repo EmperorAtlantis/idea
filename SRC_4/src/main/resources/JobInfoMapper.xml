@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.oracle.dao.JobInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.oracle.entitys.JobInfo" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="job" property="job" jdbcType="CHAR" />
+    <result column="departmentId" property="departmentId" jdbcType="INTEGER" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, job, departmentId
+  </sql>
+  
+  <select id="allJobInfo" resultMap="BaseResultMap">
+  	select <include refid="Base_Column_List"/> from jobinfo 
+  </select>
+  
+  <!-- 查询某个部门的所有职位 -->
+  <select id="jobsForDepartment" resultMap="BaseResultMap">
+  select <include refid="Base_Column_List"/> from jobinfo  where departmentId=#{departmentId}
+  </select>
+  
+  
+  
+  
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from jobinfo
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from jobinfo
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.oracle.entitys.JobInfo" >
+    insert into jobinfo (id, job, departmentId
+      )
+    values (#{id,jdbcType=INTEGER}, #{job,jdbcType=CHAR}, #{departmentId,jdbcType=INTEGER}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.oracle.entitys.JobInfo" >
+    insert into jobinfo
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="job != null" >
+        job,
+      </if>
+      <if test="departmentId != null" >
+        departmentId,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="job != null" >
+        #{job,jdbcType=CHAR},
+      </if>
+      <if test="departmentId != null" >
+        #{departmentId,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.oracle.entitys.JobInfo" >
+    update jobinfo
+    <set >
+      <if test="job != null" >
+        job = #{job,jdbcType=CHAR},
+      </if>
+      <if test="departmentId != null" >
+        departmentId = #{departmentId,jdbcType=INTEGER},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.oracle.entitys.JobInfo" >
+    update jobinfo
+    set job = #{job,jdbcType=CHAR},
+      departmentId = #{departmentId,jdbcType=INTEGER}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

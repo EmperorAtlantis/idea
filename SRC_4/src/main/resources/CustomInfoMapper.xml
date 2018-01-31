@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.oracle.dao.CustomInfoMapper">
+	<resultMap id="BaseResultMap" type="com.oracle.entitys.CustomInfo">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="customId" property="customId" jdbcType="INTEGER" />
+		<result column="followManId" property="followManId" jdbcType="INTEGER" />
+		<result column="statu" property="statu" jdbcType="CHAR" />
+		<result column="startDate" property="startDate" jdbcType="DATE" />
+		<result column="planDate" property="planDate" jdbcType="DATE" />
+		<result column="lastFollowDate" property="lastFollowDate" jdbcType="DATE" />
+		<result column="mark" property="mark" jdbcType="VARCHAR" />
+	</resultMap>
+	<resultMap id="fullResultMap" type="com.oracle.entitys.CustomInfo">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="customId" property="customId" jdbcType="INTEGER" />
+		<result column="followManId" property="followManId" jdbcType="INTEGER" />
+		<result column="statu" property="statu" jdbcType="CHAR" />
+		<result column="startDate" property="startDate" javaType="java.sql.Date" />
+		<result column="planDate" property="planDate" javaType="java.sql.Date" />
+		<result column="lastFollowDate" property="lastFollowDate" javaType="java.sql.Date" />
+		<result column="mark" property="mark" jdbcType="VARCHAR" />
+		<result column="name" property="customName" />
+		<result column="phoneNo" property="customPhoneNo" />
+	</resultMap>
+	<!-- 为TMK销售员工分配一个客户 -->
+	<insert id="addCustomInfo"> insert into custominfo(customId,followManId,statu,startDate) values
+		(#{customId},#{followManId},'0',now())
+	</insert>
+	<!-- 添加备注 -->
+	<update id="updateMark" parameterType="com.oracle.entitys.CustomInfo"> update custominfo set mark
+		=CONCAT_WS(',',mark,#{mark}), lastFollowDate=now() where id = #{id}
+	</update>
+	<!-- 按条件搜索客户信息表记录 -->
+	<select id="CustomInfosByCondition" resultMap="fullResultMap">
+		select f.*,c.name,c.phoneNo from custominfo f left join custom c on f.customId=c.id
+		<include refid="condition" />
+		limit #{startRow},#{pageSize}
+	</select>
+	<select id="customInfoForMonth" resultMap="fullResultMap"> select f.*,c.name,c.phoneNo from custominfo f
+		left join custom c on f.customId=c.id where followManId=#{followManId} and f.startDate between
+		DATE_ADD(curdate(),interval -day(curdate())+1 day) and last_day(curdate()) order by f.id
+	</select>
+	<select id="customInfoForWeek" resultMap="fullResultMap"> select f.*,c.name,c.phoneNo from custominfo f left
+		join custom c on f.customId=c.id where followManId=#{followManId} and
+		YEARWEEK(date_format(f.startDate,'%Y-%m-%d')) = YEARWEEK(now())-1 order by f.id
+	</select>
+	<sql id="condition">
+		<where>
+			followManId=#{customInfo.followManId}
+			<if test="customInfo.startDate!=null "> and startDate=#{customInfo.startDate}
+			</if>
+			<if test="customInfo.planDate !=null"> and planDate=#{customInfo.planDate}
+			</if>
+			<if test="customInfo.statu !=null"> and statu='0' and startDate!=curdate()
+			</if>
+			<if test="customInfo.id==1"> and startDate between DATE_ADD(curdate(),interval -day(curdate())+1 day) and
+				last_day(curdate())
+			</if>
+		</where>
+	</sql>
+	<!-- 查询销售员工某个状态客户的统计数量 -->
+	<select id="countByStatu" resultType="int"> select count(id) from custominfo where
+		followManId=#{followManId} and statu=#{statu} and startDate between DATE_ADD(curdate(),interval
+		-day(curdate())+1 day) and last_day(curdate())
+	</select>
+	<select id="countByCondition" resultType="int">
+		select count(id) from custominfo
+		<include refid="condition" />
+	</select>
+	<sql id="Base_Column_List"> id, customId, followManId, statu, startDate, planDate, lastFollowDate, mark
+	</sql>
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+		select
+		<include refid="Base_Column_List" />
+		from custominfo where id = #{id,jdbcType=INTEGER}
+	</select>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Integer"> delete from custominfo where id =
+		#{id,jdbcType=INTEGER}
+	</delete>
+	<insert id="insert" parameterType="com.oracle.entitys.CustomInfo"> insert into custominfo (id, customId, followManId, statu,
+		startDate, planDate, lastFollowDate, mark) values (#{id,jdbcType=INTEGER},
+		#{customId,jdbcType=INTEGER}, #{followManId,jdbcType=INTEGER}, #{statu,jdbcType=CHAR},
+		#{startDate,jdbcType=DATE}, #{planDate,jdbcType=DATE}, #{lastFollowDate,jdbcType=DATE},
+		#{mark,jdbcType=VARCHAR})
+	</insert>
+	<update id="updateCustomInfo" parameterType="com.oracle.entitys.CustomInfo">
+		update custominfo
+		<set>
+			<if test="statu != null "> statu = #{statu},
+			</if>
+			<if test="planDate != null"> planDate = #{planDate},
+			</if>
+			lastFollowDate = now()
+		</set>
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+	<update id="updateByPrimaryKeySelective" parameterType="com.oracle.entitys.CustomInfo">
+		update custominfo
+		<set>
+			<if test="customId != null"> customId = #{customId,jdbcType=INTEGER},
+			</if>
+			<if test="followManId != null"> followManId = #{followManId,jdbcType=INTEGER},
+			</if>
+			<if test="statu != null"> statu = #{statu,jdbcType=CHAR},
+			</if>
+			<if test="startDate != null"> startDate = #{startDate,jdbcType=DATE},
+			</if>
+			<if test="planDate != null"> planDate = #{planDate,jdbcType=DATE},
+			</if>
+			<if test="lastFollowDate != null"> lastFollowDate = #{lastFollowDate,jdbcType=DATE},
+			</if>
+			<if test="mark != null"> mark = #{mark,jdbcType=VARCHAR},
+			</if>
+		</set>
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+	<update id="updateByPrimaryKey" parameterType="com.oracle.entitys.CustomInfo"> update custominfo set customId =
+		#{customId,jdbcType=INTEGER}, followManId = #{followManId,jdbcType=INTEGER}, statu =
+		#{statu,jdbcType=CHAR}, startDate = #{startDate,jdbcType=DATE}, planDate =
+		#{planDate,jdbcType=DATE}, lastFollowDate = #{lastFollowDate,jdbcType=DATE}, mark =
+		#{mark,jdbcType=VARCHAR} where id = #{id,jdbcType=INTEGER}
+	</update>
+</mapper>

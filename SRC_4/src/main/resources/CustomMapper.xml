@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.oracle.dao.CustomMapper">
+	<resultMap id="BaseResultMap" type="com.oracle.entitys.Custom">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="name" property="name" jdbcType="CHAR" />
+		<result column="education" property="education" jdbcType="CHAR" />
+		<result column="phoneNo" property="phoneNo" jdbcType="CHAR" />
+		<result column="qq" property="qq" jdbcType="CHAR" />
+		<result column="email" property="email" jdbcType="CHAR" />
+		<result column="customStatu" property="customStatu" jdbcType="CHAR" />
+		<result column="createDate" property="createDate" javaType="java.sql.Date" />
+		<result column="inviteName" property="inviteName" jdbcType="CHAR" />
+	</resultMap>
+	<sql id="Base_Column_List"> id, name, education, phoneNo, qq, email, customStatu,createDate, inviteName
+	</sql>
+	<!--按条件搜索客户 createdate导入日期,customstatu客户状态,phoneno手机号, name客户姓名,invitename邀约人姓名 -->
+	<select id="queryByCondition" resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from custom
+		<where>
+			<if test="custom.name != null"> name like #{custom.name,jdbcType=CHAR}
+			</if>
+			<if test="custom.phoneNo != null"> phoneNo like #{custom.phoneNo,jdbcType=CHAR}
+			</if>
+			<if test="custom.customStatu != null"> customStatu=#{custom.customStatu,jdbcType=CHAR}
+			</if>
+			<if test="custom.createDate != null"> createDate=#{custom.createDate}
+			</if>
+			<if test="custom.inviteName != null"> inviteName like #{custom.inviteName,jdbcType=CHAR}
+			</if>
+		</where>
+		limit #{startRow},#{pageSize}
+	</select>
+	<select id="totalByCondition" resultType="java.lang.Integer">
+		select count(id) from custom
+		<where>
+			<if test="name != null"> name like #{name,jdbcType=CHAR}
+			</if>
+			<if test="phoneNo != null"> phoneNo=#{phoneNo,jdbcType=CHAR}
+			</if>
+			<if test="customStatu != null"> customStatu=#{customStatu,jdbcType=CHAR}
+			</if>
+			<if test="createDate != null"> createDate=#{createDate}
+			</if>
+			<if test="inviteName != null"> inviteName=#{inviteName,jdbcType=CHAR}
+			</if>
+		</where>
+	</select>
+	<select id="customIdsByStatu" resultType="int"> select id from custom where
+		customStatu=#{customStatu}
+	</select>
+	<update id="updateCustomStatu"> update custom set customStatu=#{statu} where id in ${customIds}
+	</update>
+	<select id="checkCutomExist" resultType="java.lang.String" parameterType="com.oracle.entitys.Custom"> select name from
+		custom where name=#{name} and phoneNo=#{phoneNo}
+	</select>
+	<select id="customsForMonth" resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from custom where createDate between DATE_ADD(curdate(),interval -day(curdate())+1 day) and
+		last_day(curdate()) order by id
+	</select>
+	<select id="customsForWeek" resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from custom WHERE YEARWEEK(date_format(createDate,'%Y-%m-%d')) = YEARWEEK(now())-1 order by id
+	</select>
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+		select
+		<include refid="Base_Column_List" />
+		from custom where id = #{id,jdbcType=INTEGER}
+	</select>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Integer"> delete from custom where id =
+		#{id,jdbcType=INTEGER}
+	</delete>
+	<insert id="insert" parameterType="com.oracle.entitys.Custom" useGeneratedKeys="true" keyProperty="id">
+		insert into custom (name, education, phoneNo, qq, email, customStatu, createDate, inviteName)
+		values (#{name,jdbcType=CHAR}, #{education,jdbcType=CHAR}, #{phoneNo,jdbcType=CHAR},
+		#{qq,jdbcType=CHAR}, #{email,jdbcType=CHAR}, #{customStatu,jdbcType=CHAR},
+		<if test="createDate==null"> now(),
+		</if>
+		<if test="createDate!=null"> #{createDate},
+		</if>
+		#{inviteName,jdbcType=CHAR})
+		
+	</insert>
+	<insert id="insertSelective" parameterType="com.oracle.entitys.Custom">
+		insert into custom
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id >0"> id,
+			</if>
+			<if test="name != null"> name,
+			</if>
+			<if test="education != null"> education,
+			</if>
+			<if test="phoneNo != null"> phoneNo,
+			</if>
+			<if test="qq != null"> qq,
+			</if>
+			<if test="email != null"> email,
+			</if>
+			<if test="customStatu != null"> customStatu,
+			</if>
+			<if test="createDate != null"> createDate,
+			</if>
+			<if test="inviteName != null"> inviteName,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null"> #{id,jdbcType=INTEGER},
+			</if>
+			<if test="name != null"> #{name,jdbcType=CHAR},
+			</if>
+			<if test="education != null"> #{education,jdbcType=CHAR},
+			</if>
+			<if test="phoneNo != null"> #{phoneNo,jdbcType=CHAR},
+			</if>
+			<if test="qq != null"> #{qq,jdbcType=CHAR},
+			</if>
+			<if test="email != null"> #{email,jdbcType=CHAR},
+			</if>
+			<if test="customStatu != null"> #{customStatu,jdbcType=CHAR},
+			</if>
+			<if test="createDate != null"> #{createDate,jdbcType=DATE},
+			</if>
+			<if test="inviteName != null"> #{inviteName,jdbcType=CHAR},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKeySelective" parameterType="com.oracle.entitys.Custom">
+		update custom
+		<set>
+			<if test="name != null"> name = #{name,jdbcType=CHAR},
+			</if>
+			<if test="education != null"> education = #{education,jdbcType=CHAR},
+			</if>
+			<if test="phoneNo != null"> phoneNo = #{phoneNo,jdbcType=CHAR},
+			</if>
+			<if test="qq != null"> qq = #{qq,jdbcType=CHAR},
+			</if>
+			<if test="email != null"> email = #{email,jdbcType=CHAR},
+			</if>
+			<if test="customStatu != null"> customStatu = #{customStatu,jdbcType=CHAR},
+			</if>
+			<if test="createDate != null"> createDate = #{createDate,jdbcType=DATE},
+			</if>
+			<if test="inviteName != null"> inviteName = #{inviteName,jdbcType=CHAR},
+			</if>
+		</set>
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+	<update id="updateByPrimaryKey" parameterType="com.oracle.entitys.Custom"> update custom set name =
+		#{name,jdbcType=CHAR}, education = #{education,jdbcType=CHAR}, phoneNo = #{phoneNo,jdbcType=CHAR},
+		qq = #{qq,jdbcType=CHAR}, email = #{email,jdbcType=CHAR}, customStatu =
+		#{customStatu,jdbcType=CHAR}, createDate = #{createDate,jdbcType=DATE}, inviteName =
+		#{inviteName,jdbcType=CHAR} where id = #{id,jdbcType=INTEGER}
+	</update>
+</mapper>

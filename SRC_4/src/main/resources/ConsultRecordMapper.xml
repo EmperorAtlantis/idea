@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.oracle.dao.ConsultRecordMapper">
+	<resultMap id="BaseResultMap" type="com.oracle.entitys.ConsultRecord">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="customId" property="customId" jdbcType="INTEGER" />
+		<result column="consultStatu" property="consultStatu" jdbcType="CHAR" />
+		<result column="consultManId" property="consultManId" jdbcType="INTEGER" />
+		<result column="consultDate" property="consultDate" jdbcType="DATE" />
+		<result column="result" property="result" jdbcType="VARCHAR" />
+	</resultMap>
+	<resultMap id="fullResultMap" type="com.oracle.entitys.ConsultRecord">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="customId" property="customId" jdbcType="INTEGER" />
+		<result column="consultStatu" property="consultStatu" jdbcType="CHAR" />
+		<result column="consultManId" property="consultManId" jdbcType="INTEGER" />
+		<result column="consultDate" property="consultDate" javaType="java.sql.Date" />
+		<result column="result" property="result" jdbcType="VARCHAR" />
+		<result column="name" property="customName" />
+		<result column="phoneNo" property="customPhoneNo" />
+	</resultMap>
+	<!-- 为咨询师分配一个客户 -->
+	<insert id="addConsultRecord"> insert into consultrecord(customId,consultStatu,consultManId,consultDate)
+		values(#{customId},'0',#{consultManId},now())
+	</insert>
+	<select id="allConsultRecords" resultMap="fullResultMap"> select r.*,c.name,c.phoneNo from consultrecord r
+		left join custom c on r.customId=c.id where r.consultManId=#{record.consultManId} and
+		r.consultDate between DATE_ADD(curdate(),interval -day(curdate())+1 day) and last_day(curdate())
+		limit #{startRow},#{pageSize}
+	</select>
+	<!-- 查询咨询师某个状态客户的统计数量 -->
+	<select id="countByStatu" resultType="int"> select count(id) from consultrecord where
+		consultManId=#{consultManId} and consultStatu=#{consultStatu} and consultDate between
+		DATE_ADD(curdate(),interval -day(curdate())+1 day) and last_day(curdate())
+	</select>
+	<select id="ConsultRecordByDate" resultMap="fullResultMap"> select r.*,c.name,c.phoneNo from consultrecord r
+		left join custom c on r.customId=c.id where r.consultManId=#{record.consultManId} and
+		r.consultDate between #{record.consultDate} and #{endDate} limit #{startRow},#{pageSize}
+	</select>
+	<select id="ConsultRecordByParam" resultMap="fullResultMap" parameterType="com.oracle.entitys.ConsultRecord">
+		select r.*,c.name,c.phoneNo from consultrecord r left join custom c on r.customId=c.id
+		<include refid="param" />
+	</select>
+	<sql id="param">
+		<where>
+			r.consultManId=#{consultManId}
+			<if test="customName!=null and customName !=''"> and c.name like #{customName}
+			</if>
+			<if test="customPhoneNo != null and customPhoneNo != ''"> and c.phoneNo like #{customPhoneNo}
+			</if>
+		</where>
+	</sql>
+	<select id="countByCondition" resultType="int">
+		select count(r.id) from consultrecord r left join custom c on r.customId=c.id
+		<include refid="count" />
+	</select>
+	<sql id="count">
+		<where>
+			r.consultManId=#{record.consultManId}
+			<if test="record.customName !=null"> and c.name like #{record.customName}
+			</if>
+			<if test="record.customPhoneNo!=null"> and c.phoneNo like #{record.customPhoneNo}
+			</if>
+			<if test="endDate !=null"> and r.consultDate between #{record.consultDate} and #{endDate}
+			</if>
+		</where>
+	</sql>
+	<update id="updateConsultRecord" parameterType="com.oracle.entitys.ConsultRecord"> update consultrecord set
+		consultStatu=#{consultStatu} where id=#{id}
+	</update>
+	<update id="updateResult" parameterType="com.oracle.entitys.ConsultRecord"> update consultrecord set
+		result=CONCAT_WS(',',result,#{result}) where id=#{id}
+	</update>
+	<sql id="Base_Column_List"> id, customId, consultStatu, consultManId, consultDate, result
+	</sql>
+	<select id="ConsultRecordForMonth" resultMap="fullResultMap"> select r.*,c.name,c.phoneNo from consultrecord
+		r left join custom c on r.customId=c.id where r.consultManId=#{consultManId} and r.consultDate
+		between DATE_ADD(curdate(),interval -day(curdate())+1 day) and last_day(curdate()) order by r.id
+	</select>
+	<select id="ConsultRecordForWeek" resultMap="fullResultMap"> select r.*,c.name,c.phoneNo from consultrecord
+		r left join custom c on r.customId=c.id where r.consultManId=#{consultManId} and
+		YEARWEEK(date_format(r.consultDate,'%Y-%m-%d')) = YEARWEEK(now())-1 order by r.id
+	</select>
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+		select
+		<include refid="Base_Column_List" />
+		from consultrecord where id = #{id,jdbcType=INTEGER}
+	</select>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Integer"> delete from consultrecord where id =
+		#{id,jdbcType=INTEGER}
+	</delete>
+	<insert id="insert" parameterType="com.oracle.entitys.ConsultRecord"> insert into consultrecord (id, customId, consultStatu,
+		consultManId, consultDate, result ) values (#{id,jdbcType=INTEGER}, #{customId,jdbcType=INTEGER},
+		#{consultStatu,jdbcType=CHAR}, #{consultManId,jdbcType=INTEGER}, #{consultDate,jdbcType=DATE},
+		#{result,jdbcType=VARCHAR} )
+	</insert>
+	<insert id="insertSelective" parameterType="com.oracle.entitys.ConsultRecord">
+		insert into consultrecord
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null"> id,
+			</if>
+			<if test="customId != null"> customId,
+			</if>
+			<if test="consultStatu != null"> consultStatu,
+			</if>
+			<if test="consultManId != null"> consultManId,
+			</if>
+			<if test="consultDate != null"> consultDate,
+			</if>
+			<if test="result != null"> result,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null"> #{id,jdbcType=INTEGER},
+			</if>
+			<if test="customId != null"> #{customId,jdbcType=INTEGER},
+			</if>
+			<if test="consultStatu != null"> #{consultStatu,jdbcType=CHAR},
+			</if>
+			<if test="consultManId != null"> #{consultManId,jdbcType=INTEGER},
+			</if>
+			<if test="consultDate != null"> #{consultDate,jdbcType=DATE},
+			</if>
+			<if test="result != null"> #{result,jdbcType=VARCHAR},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKeySelective" parameterType="com.oracle.entitys.ConsultRecord">
+		update consultrecord
+		<set>
+			<if test="consultStatu != null and consultStatu!=''"> consultStatu = #{consultStatu,jdbcType=CHAR},
+			</if>
+		</set>
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+	<update id="updateByPrimaryKey" parameterType="com.oracle.entitys.ConsultRecord"> update consultrecord set customId =
+		#{customId,jdbcType=INTEGER}, consultStatu = #{consultStatu,jdbcType=CHAR}, consultManId =
+		#{consultManId,jdbcType=INTEGER}, consultDate = #{consultDate,jdbcType=DATE}, result =
+		#{result,jdbcType=VARCHAR} where id = #{id,jdbcType=INTEGER}
+	</update>
+</mapper>

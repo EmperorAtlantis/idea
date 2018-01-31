@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.oracle.dao.EmployeeMapper" >
+  <resultMap id="BaseResultMap" type="com.oracle.entitys.Employee" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="nickname" property="nickname" jdbcType="CHAR" />
+    <result column="realname" property="realname" jdbcType="CHAR" />
+    <result column="jobInfoId" property="jobInfoId" jdbcType="INTEGER" />
+    <result column="departmentId" property="departmentId" jdbcType="INTEGER" />
+    <result column="phoneNo" property="phoneNo" jdbcType="CHAR" />
+    <result column="officeTel" property="officeTel" jdbcType="CHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, username, pass, nickname, realname, jobInfoId, departmentId, phoneNo, officeTel, 
+    workStatu
+  </sql>
+  
+  <resultMap id="fullResultMap" type="com.oracle.entitys.Employee" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="nickname" property="nickname" jdbcType="CHAR" />
+    <result column="realname" property="realname" jdbcType="CHAR" />
+    <result column="phoneNo" property="phoneNo" jdbcType="CHAR" />
+    <result column="officeTel" property="officeTel" jdbcType="CHAR" />
+    <result column="dname" property="dname"/>
+    <result column="job" property="job"/>
+  </resultMap>
+  
+  
+  
+  
+  <!--查看所有员工  -->
+  <select id="allEmployees" resultMap="BaseResultMap" >
+    select e.id,e.nickname,e.realname,e.phoneNo,officeTel,d.dname,j.job from employee e,department d,jobinfo j 
+    where e.departmentId=d.id and e.jobInfoId=j.id and jobInfoId!=1
+  </select>
+  
+  <!--按条件搜索所有员工:username,realname,departmentId,jobInfoId  -->
+  <select id="employeesByCondition" resultMap="BaseResultMap" parameterType="com.oracle.entitys.Employee" >
+    select 
+    <include refid="Base_Column_List" />
+    from employee
+    <where>
+      <if test="username != null" >
+        and username like #{username,jdbcType=CHAR}
+      </if>
+      <if test="realname != null" >
+        and realname = #{realname,jdbcType=CHAR}
+      </if>
+      <if test="jobInfoId != null" >
+        and jobInfoId = #{jobInfoId,jdbcType=INTEGER}
+      </if>
+      <if test="departmentId != null" >
+        and departmentId = #{departmentId,jdbcType=INTEGER}
+      </if>
+    </where>
+  </select>
+  
+ <!--  根据员工用户名和手机号重置员工密码 -->
+  <update id="resetPass">
+  	update employee set pass='c61bfc278c72560e5cc3a7d44154b6e3d2dfabebae62c97bd16b8d651c23eeac' where username=#{username} and phoneNo=#{phoneNo}
+  </update>
+  
+  <update id="changePass">
+  	update employee set pass=#{newPass} where id=#{userId}
+  
+  </update>
+  
+  
+  
+  <!-- 根据员工用户名删除(修改在职状态)  @param username-->
+  <update id="cancleEmployee">
+  	update employee set workStatu='0' where username=#{username}
+  
+  </update>
+  
+  <!--新增员工  @param employee username,
+  		jobInfoId,managerId,phoneNo,realname  -->
+  <insert id="addEmployee" parameterType="com.oracle.entitys.Employee" >
+    insert into employee (username,realname,jobInfoId,departmentId, phoneNo,officeTel,pass,workStatu,nickname)
+    values (#{username}, #{realname}, #{jobInfoId}, 
+      #{departmentId}, #{phoneNo},#{officeTel},#{pass},#{workStatu},#{nickname})
+  </insert>
+  
+ <!--  用户登录业务 -->
+  <select id="login" resultType="com.oracle.entitys.Employee">
+  	select * from employee where username=#{username} and pass=#{pass} and workStatu='1'
+  </select>
+  
+ <!--  检查用户名是否已存在 -->
+  <select id="usernameCheck" resultType="java.lang.String">
+  	select username from employee where username=#{username}
+  </select>
+  
+  <select id="checkWorkStatu" resultType="java.lang.String">
+  	select workStatu from employee where username=#{username}
+  </select>
+  
+  
+  <select id="empForDepart" resultMap="BaseResultMap">
+  	select id,realname,nickname,phoneNo,officeTel from employee where departmentId=#{departmentId} and id!=#{managerId}
+  
+  </select>
+  
+  <update id="updateUser" parameterType="com.oracle.entitys.Employee">
+  	update employee set nickname=#{nickname},phoneNo=#{phoneNo},officeTel=#{officeTel} where id=#{id} 
+  
+  </update>
+  
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from employee
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from employee
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.oracle.entitys.Employee" >
+    insert into employee (id, username, pass, 
+      nickname, realname, jobInfoId, 
+      departmentId, phoneNo, officeTel, 
+      workStatu)
+    values (#{id,jdbcType=INTEGER}, #{username,jdbcType=CHAR}, #{pass,jdbcType=CHAR}, 
+      #{nickname,jdbcType=CHAR}, #{realname,jdbcType=CHAR}, #{jobInfoId,jdbcType=INTEGER}, 
+      #{departmentId,jdbcType=INTEGER}, #{phoneNo,jdbcType=CHAR}, #{officeTel,jdbcType=CHAR}, 
+      #{workStatu,jdbcType=CHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.oracle.entitys.Employee" >
+    insert into employee
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="username != null" >
+        username,
+      </if>
+      <if test="pass != null" >
+        pass,
+      </if>
+      <if test="nickname != null" >
+        nickname,
+      </if>
+      <if test="realname != null" >
+        realname,
+      </if>
+      <if test="jobInfoId != null" >
+        jobInfoId,
+      </if>
+      <if test="departmentId != null" >
+        departmentId,
+      </if>
+      <if test="phoneNo != null" >
+        phoneNo,
+      </if>
+      <if test="officeTel != null" >
+        officeTel,
+      </if>
+      <if test="workStatu != null" >
+        workStatu,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="username != null" >
+        #{username,jdbcType=CHAR},
+      </if>
+      <if test="pass != null" >
+        #{pass,jdbcType=CHAR},
+      </if>
+      <if test="nickname != null" >
+        #{nickname,jdbcType=CHAR},
+      </if>
+      <if test="realname != null" >
+        #{realname,jdbcType=CHAR},
+      </if>
+      <if test="jobInfoId != null" >
+        #{jobInfoId,jdbcType=INTEGER},
+      </if>
+      <if test="departmentId != null" >
+        #{departmentId,jdbcType=INTEGER},
+      </if>
+      <if test="phoneNo != null" >
+        #{phoneNo,jdbcType=CHAR},
+      </if>
+      <if test="officeTel != null" >
+        #{officeTel,jdbcType=CHAR},
+      </if>
+      <if test="workStatu != null" >
+        #{workStatu,jdbcType=CHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.oracle.entitys.Employee" >
+    update employee
+    <set >
+      <if test="username != null" >
+        username = #{username,jdbcType=CHAR},
+      </if>
+      <if test="pass != null" >
+        pass = #{pass,jdbcType=CHAR},
+      </if>
+      <if test="nickname != null" >
+        nickname = #{nickname,jdbcType=CHAR},
+      </if>
+      <if test="realname != null" >
+        realname = #{realname,jdbcType=CHAR},
+      </if>
+      <if test="jobInfoId != null" >
+        jobInfoId = #{jobInfoId,jdbcType=INTEGER},
+      </if>
+      <if test="departmentId != null" >
+        departmentId = #{departmentId,jdbcType=INTEGER},
+      </if>
+      <if test="phoneNo != null" >
+        phoneNo = #{phoneNo,jdbcType=CHAR},
+      </if>
+      <if test="officeTel != null" >
+        officeTel = #{officeTel,jdbcType=CHAR},
+      </if>
+      <if test="workStatu != null" >
+        workStatu = #{workStatu,jdbcType=CHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.oracle.entitys.Employee" >
+    update employee
+    set username = #{username,jdbcType=CHAR},
+      pass = #{pass,jdbcType=CHAR},
+      nickname = #{nickname,jdbcType=CHAR},
+      realname = #{realname,jdbcType=CHAR},
+      jobInfoId = #{jobInfoId,jdbcType=INTEGER},
+      departmentId = #{departmentId,jdbcType=INTEGER},
+      phoneNo = #{phoneNo,jdbcType=CHAR},
+      officeTel = #{officeTel,jdbcType=CHAR},
+      workStatu = #{workStatu,jdbcType=CHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>
