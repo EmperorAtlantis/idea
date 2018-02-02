@@ -44,7 +44,7 @@
 								data-options="required:true,iconCls:'icon-man',iconWidth:38,prompt:'用户名...',validType:'email',validateOnCreate:false,validateOnBlur:true,invalidMessage:'请输入有效用户名',invalidMessage:'用户名无效!'">
 						</div>
 						<div style="margin-bottom:20px">
-							<label for="pass" class="label-top">密&nbsp;码:</label> <input id="pass" name="pass" style="width: 180px"
+							<label for="pass" class="label-top">密&nbsp;&nbsp;码:</label> <input id="pass" name="pass" style="width: 180px"
 								class="easyui-textbox" type="password"
 								data-options="required:true,iconCls:'icon-lock',iconWidth:38,validType:'length[6,16]',validateOnCreate:false,validateOnBlur:true">
 							<a href="javascript:$('#forgot-dlg').dialog('open')">忘记密码?</a>

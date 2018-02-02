@@ -17,6 +17,7 @@ import com.oracle.biz.impl.ConsultBizImpl;
 import com.oracle.biz.impl.CustomBizImpl;
 import com.oracle.entitys.ConsultRecord;
 import com.oracle.utils.ExcelUtils;
+import org.springframework.web.bind.annotation.RestController;
 
 @Controller
 public class ConsultController {
